@@ -18,6 +18,7 @@ cloudinary.config({
 });
 
 app.use(require("./routes/restaurants"));
+app.use(require("./routes/user"));
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "route not found" });

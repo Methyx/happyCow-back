@@ -59,8 +59,8 @@ router.get("/restaurants", async (req, res) => {
     // envoi de la requete à la BDD
     const results = await Restaurant.find(requestFind)
       .skip(nbToSkip)
-      .limit(nbRestaurants)
-      .select("name description address");
+      .limit(nbRestaurants);
+    //   .select("name description address");
     //   .populate("owner", "account _id");
     // reponse au client
     nbElements = await Restaurant.countDocuments(requestFind);
