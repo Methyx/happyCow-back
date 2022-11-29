@@ -4,6 +4,9 @@ const router = express.Router();
 
 const Restaurant = require("../models/Restaurant");
 
+// =======================
+// Search a list of items
+// =======================
 router.get("/restaurants", async (req, res) => {
   try {
     const {
@@ -17,14 +20,14 @@ router.get("/restaurants", async (req, res) => {
       page,
       nbPerPage,
     } = req.query;
-    // construction de la requete dans FIND pour les mots clés
+    // build FIND request with key words
     const requestFind = {};
     if (string) {
       if (nameOnly === "true") {
-        // string est recherché sur "name" uniquement
+        // string is searched ONLY in "name"
         requestFind.name = new RegExp(string, "i");
       } else {
-        //string est recherché dans "name" ou dans "description"
+        //string is searched in "name" or in "description"
         requestFind.$or = [
           { name: new RegExp(string, "i") },
           { description: new RegExp(string, "i") },
@@ -46,7 +49,7 @@ router.get("/restaurants", async (req, res) => {
     if (vegOnly === "true") {
       requestFind.vegOnly = 1;
     }
-    // construction de la requete SKIP et LIMIT
+    // build SKIP and LIMIT request
     let nbRestaurants = 10;
     if (nbPerPage && Number(nbPerPage) && Number(nbPerPage) > 0) {
       nbRestaurants = nbPerPage;
@@ -56,19 +59,43 @@ router.get("/restaurants", async (req, res) => {
       nbToSkip = (page - 1) * nbRestaurants;
     }
 
-    // envoi de la requete à la BDD
+    // send request to DB
     const results = await Restaurant.find(requestFind)
       .skip(nbToSkip)
       .limit(nbRestaurants);
     //   .select("name description address");
     //   .populate("owner", "account _id");
-    // reponse au client
+    // Send Response
     nbElements = await Restaurant.countDocuments(requestFind);
     const response = {
       count: nbElements,
       restaurants: results,
     };
     res.json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// ================================
+// Search ONE item by id
+// ================================
+router.get("/restaurant/:id", async (req, res) => {
+  const id = req.params.id;
+  let result = {};
+  try {
+    if (id.includes("placeId=")) {
+      result = await Restaurant.findOne({
+        placeId: id.replace("placeId=", ""),
+      });
+    } else {
+      result = await Restaurant.findById(id);
+    }
+    if (!result) {
+      res.status(404).json({ message: "item not found" });
+    } else {
+      res.json(result);
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
