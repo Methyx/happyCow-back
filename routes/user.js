@@ -146,7 +146,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       email: userToModify.email,
       username: userToModify.account.username,
       favorites: userToModify.favorites,
-      avatar: userToModify.account.avatar.secure_url,
+      avatar: userToModify.account.avatar?.secure_url,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
