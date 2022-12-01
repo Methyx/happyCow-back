@@ -109,6 +109,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
     const { email, username, favorites } = req.body;
     const avatar = req.files?.picture;
     const userToModify = await User.findById(req.user._id);
+    let isModified = false;
     if (email && email !== userToModify.email) {
       // verification de l'inexistence du nouvel email dans la BDD
       const userExisting = await User.findOne({ email: email });
@@ -117,10 +118,12 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       } else {
         // changement de l'email
         userToModify.email = email;
+        isModified = true;
       }
     }
     if (username && username !== userToModify.account.username) {
       userToModify.account.username = username;
+      isModified = true;
     }
     if (avatar) {
       const folder = "/happyCow/users/" + req.user._id;
@@ -129,15 +132,21 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
         (options = { folder: folder })
       );
       userToModify.account.avatar = avatarCloudinary;
+      isModified = true;
     }
     if (favorites) {
       userToModify.favorites = [...favorites];
+      isModified = true;
     }
-    const updated = await userToModify.save();
+
+    if (isModified) {
+      const updated = await userToModify.save();
+    }
     res.json({
-      email: updated.email,
-      account: updated.account,
-      favorites: updated.favorites,
+      email: userToModify.email,
+      username: userToModify.account.username,
+      favorites: userToModify.favorites,
+      avatar: userToModify.account.avatar.secure_url,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
