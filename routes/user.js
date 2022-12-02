@@ -106,7 +106,7 @@ router.post("/user/login", async (req, res) => {
 // ========================
 router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
   try {
-    const { email, username, favorites } = req.body;
+    const { email, username, favorites, modifyAvatar } = req.body;
     const avatar = req.files?.picture;
     const userToModify = await User.findById(req.user._id);
     let isModified = false;
@@ -125,13 +125,21 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       userToModify.account.username = username;
       isModified = true;
     }
-    if (avatar) {
-      const folder = "/happyCow/users/" + req.user._id;
-      const avatarCloudinary = await cloudinary.uploader.upload(
-        convertToBase64(avatar),
-        (options = { folder: folder })
-      );
-      userToModify.account.avatar = avatarCloudinary;
+    if (modifyAvatar === "true") {
+      if (userToModify.account.avatar) {
+        const deleted = await cloudinary.uploader.destroy(
+          userToModify.account.avatar.public_id
+        );
+        userToModify.account.avatar = null;
+      }
+      if (avatar) {
+        const folder = "/happyCow/users/" + req.user._id;
+        const avatarCloudinary = await cloudinary.uploader.upload(
+          convertToBase64(avatar),
+          (options = { folder: folder })
+        );
+        userToModify.account.avatar = avatarCloudinary;
+      }
       isModified = true;
     }
     if (favorites) {
@@ -147,6 +155,27 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       favorites: userToModify.favorites,
       avatar: userToModify.account.avatar?.secure_url,
     });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// ====================================
+// Obtenir les données d'un utilisateur
+// ====================================
+router.get("/user/read", isAuthenticated, async (req, res) => {
+  try {
+    const userToRead = await User.findById(req.user._id);
+    if (userToRead) {
+      res.json({
+        email: userToRead.email,
+        username: userToRead.account.username,
+        favorites: userToRead.favorites,
+        avatar: userToRead.account.avatar?.secure_url || null,
+      });
+    } else {
+      res.status(400).json({ message: "user not found" });
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
