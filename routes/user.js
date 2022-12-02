@@ -122,10 +122,12 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
         isModified = true;
       }
     }
+    console.log("ici");
     if (username && username !== userToModify.account.username) {
       userToModify.account.username = username;
       isModified = true;
     }
+    console.log("là");
     if (avatar) {
       const folder = "/happyCow/users/" + req.user._id;
       const avatarCloudinary = await cloudinary.uploader.upload(
@@ -143,6 +145,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
     if (isModified) {
       const updated = await userToModify.save();
     }
+    console.log("et enfin là");
     res.json({
       email: userToModify.email,
       username: userToModify.account.username,
