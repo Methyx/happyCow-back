@@ -146,6 +146,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       const updated = await userToModify.save();
     }
     console.log("et enfin là");
+    console.log("et, donc : ", userToModify);
     res.json({
       email: userToModify.email,
       username: userToModify.account.username,
