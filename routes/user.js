@@ -109,6 +109,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
     const { email, username, favorites } = req.body;
     const avatar = req.files?.picture;
     const userToModify = await User.findById(req.user._id);
+    console.log(userToModify);
     let isModified = false;
     if (email && email !== userToModify.email) {
       // verification de l'inexistence du nouvel email dans la BDD
