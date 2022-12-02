@@ -109,7 +109,6 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
     const { email, username, favorites } = req.body;
     const avatar = req.files?.picture;
     const userToModify = await User.findById(req.user._id);
-    console.log(userToModify);
     let isModified = false;
     if (email && email !== userToModify.email) {
       // verification de l'inexistence du nouvel email dans la BDD
@@ -122,12 +121,10 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
         isModified = true;
       }
     }
-    console.log("ici");
     if (username && username !== userToModify.account.username) {
       userToModify.account.username = username;
       isModified = true;
     }
-    console.log("là");
     if (avatar) {
       const folder = "/happyCow/users/" + req.user._id;
       const avatarCloudinary = await cloudinary.uploader.upload(
@@ -141,12 +138,9 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       userToModify.favorites = [...favorites];
       isModified = true;
     }
-
     if (isModified) {
       const updated = await userToModify.save();
     }
-    console.log("et enfin là");
-    console.log("et, donc : ", userToModify);
     res.json({
       email: userToModify.email,
       username: userToModify.account.username,
