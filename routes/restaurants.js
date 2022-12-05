@@ -1,4 +1,5 @@
 // const { request } = require("express");
+const { request } = require("express");
 const express = require("express");
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.get("/restaurants", async (req, res) => {
       nameOnly,
       address,
       category,
+      type,
       rating,
       vegan,
       vegOnly,
@@ -28,18 +30,36 @@ router.get("/restaurants", async (req, res) => {
         requestFind.name = new RegExp(string, "i");
       } else {
         //string is searched in "name" or in "description"
-        requestFind.$or = [
-          { name: new RegExp(string, "i") },
-          { description: new RegExp(string, "i") },
+        requestFind.$and = [
+          {
+            $or: [
+              { name: new RegExp(string, "i") },
+              { description: new RegExp(string, "i") },
+            ],
+          },
         ];
       }
     }
     if (address) {
       requestFind.address = new RegExp(address, "i");
     }
-    if (category && Number(category)) {
-      requestFind.category = Number(category);
+    if (category) {
+      const categories = category.split(" "); // each category must be separate by "+"" in request, but split with " "
+      requestFind.$or = [];
+      for (let i = 0; i < categories.length; i++) {
+        if (categories[i] === "0" && type) {
+          const types = type.split(" "); // each type must be separate by "+"" in request, but split with " "
+          for (let j = 0; j < types.length; j++) {
+            requestFind.$or.push({
+              $and: [{ category: 0 }, { type: types[j] }],
+            });
+          }
+        } else {
+          requestFind.$or.push({ category: categories[i] });
+        }
+      }
     }
+
     if (rating && Number(rating)) {
       requestFind.rating = { $gte: Number(rating) };
     }
