@@ -142,7 +142,7 @@ router.put("/user/update", isAuthenticated, fileUpload(), async (req, res) => {
       }
       isModified = true;
     }
-    if (favorites) {
+    if (favorites && !favorites.includes("undefined")) {
       userToModify.favorites = JSON.parse(favorites);
       isModified = true;
     }
